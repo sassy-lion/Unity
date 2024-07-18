@@ -6,6 +6,8 @@
 ========================================================================= */
 
 #include "unity.h"
+#include <unistd.h>
+#include <string.h>
 
 #ifndef UNITY_PROGMEM
 #define UNITY_PROGMEM
@@ -73,6 +75,7 @@ static const char UNITY_PROGMEM UnityStrDetail2Name[]            = " " UNITY_DET
  * Pretty Printers & Test Result Output Handlers
  *-----------------------------------------------*/
 
+#ifdef UNITY_INCLUDE_PRINT_FORMATTED
 /*-----------------------------------------------*/
 /* Local helper function to print characters. */
 static void UnityPrintChar(const char* pch)
@@ -102,6 +105,7 @@ static void UnityPrintChar(const char* pch)
         UnityPrintNumberHex((UNITY_UINT)*pch, 2);
     }
 }
+#endif
 
 /*-----------------------------------------------*/
 /* Local helper function to print ANSI escape strings e.g. "\033[42m". */
@@ -127,24 +131,8 @@ static UNITY_UINT UnityPrintAnsiEscapeString(const char* string)
 /*-----------------------------------------------*/
 void UnityPrint(const char* string)
 {
-    const char* pch = string;
-
-    if (pch != NULL)
-    {
-        while (*pch)
-        {
-#ifdef UNITY_OUTPUT_COLOR
-            /* print ANSI escape code */
-            if ((*pch == 27) && (*(pch + 1) == '['))
-            {
-                pch += UnityPrintAnsiEscapeString(pch);
-                continue;
-            }
-#endif
-            UnityPrintChar(pch);
-            pch++;
-        }
-    }
+    /* Redirect to syscalls */
+    write(1u, string, strlen(string));
 }
 /*-----------------------------------------------*/
 void UnityPrintLen(const char* string, const UNITY_UINT32 length)
